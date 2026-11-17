@@ -26,13 +26,16 @@ public class GatewayAccessFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
-        if (secret.length == 0 || !request.getServletPath().startsWith("/api/")) {
+        String path = request.getServletPath();
+        boolean protectedRoute = path.startsWith("/api/internal/")
+                || request.getHeader("X-FitForge-Owner") != null;
+        if (!path.startsWith("/api/") || (secret.length == 0 && !protectedRoute)) {
             chain.doFilter(request, response);
             return;
         }
 
         String supplied = request.getHeader("X-FitForge-Internal-Key");
-        if (supplied != null && MessageDigest.isEqual(secret, supplied.getBytes(StandardCharsets.UTF_8))) {
+        if (secret.length > 0 && supplied != null && MessageDigest.isEqual(secret, supplied.getBytes(StandardCharsets.UTF_8))) {
             chain.doFilter(request, response);
             return;
         }

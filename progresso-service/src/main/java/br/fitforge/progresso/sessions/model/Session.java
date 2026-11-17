@@ -1,6 +1,8 @@
 package br.fitforge.progresso.sessions.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.springframework.data.domain.Persistable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,11 +17,18 @@ import java.time.LocalDateTime;
         @Index(name = "idx_sessao_data", columnList = "data_sessao"),
         @Index(name = "idx_sessao_ficha", columnList = "workout_id")
 })
-public class Session {
+public class Session implements Persistable<String> {
 
     @Id
     @Column(length = 80)
     private String id;
+
+    @JsonIgnore
+    @Transient
+    private boolean newSession = true;
+
+    @Column(name = "owner_username", length = 64)
+    private String owner;
 
     @Column(name = "workout_id", nullable = false, length = 80)
     private String workoutId;
@@ -46,6 +55,16 @@ public class Session {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @PostLoad
+    @PostPersist
+    void markPersisted() {
+        newSession = false;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isNew() { return newSession; }
+
     @PrePersist
     void aoCriar() {
         createdAt = LocalDateTime.now();
@@ -57,6 +76,9 @@ public class Session {
         updatedAt = LocalDateTime.now();
     }
 
+    @JsonIgnore
+    public String getOwner() { return owner; }
+    public void setOwner(String owner) { this.owner = owner; }
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getWorkoutId() { return workoutId; }

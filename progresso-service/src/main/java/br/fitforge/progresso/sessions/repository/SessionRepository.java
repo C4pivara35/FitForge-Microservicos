@@ -3,14 +3,14 @@ package br.fitforge.progresso.sessions.repository;
 import br.fitforge.progresso.sessions.model.Session;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface SessionRepository extends JpaRepository<Session, String> {
 
-    List<Session> findAllByOrderByDateDescCreatedAtDesc();
+    List<Session> findAllByOwnerOrderByDateDescCreatedAtDesc(String owner);
 
-    List<Session> findByWorkoutIdOrderByDateDescCreatedAtDesc(String workoutId);
+    List<Session> findByOwnerAndWorkoutIdOrderByDateDescCreatedAtDesc(String owner, String workoutId);
 
-    List<Session> findByDateBetweenOrderByDateDescCreatedAtDesc(LocalDate inicio, LocalDate fim);
+    Optional<Session> findByIdAndOwner(String id, String owner);
 }

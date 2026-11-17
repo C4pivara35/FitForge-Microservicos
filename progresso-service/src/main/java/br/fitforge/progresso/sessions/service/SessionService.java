@@ -9,6 +9,7 @@ import br.fitforge.progresso.exception.RegraNegocioException;
 import br.fitforge.progresso.sessions.model.Session;
 import br.fitforge.progresso.sessions.events.SessionEvents;
 import br.fitforge.progresso.sessions.repository.SessionRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,12 +44,12 @@ public class SessionService {
      * @param periodo   "semana" (seg–dom atual), "mes" (mês atual) ou vazio (tudo)
      */
     @Transactional(readOnly = true)
-    public List<Session> listar(String workoutId, String periodo) {
+    public List<Session> listar(String owner, String workoutId, String periodo) {
         List<Session> base;
         if (workoutId != null && !workoutId.isBlank()) {
-            base = repository.findByWorkoutIdOrderByDateDescCreatedAtDesc(workoutId);
+            base = repository.findByOwnerAndWorkoutIdOrderByDateDescCreatedAtDesc(owner, workoutId);
         } else {
-            base = repository.findAllByOrderByDateDescCreatedAtDesc();
+            base = repository.findAllByOwnerOrderByDateDescCreatedAtDesc(owner);
         }
         if (periodo == null || periodo.isBlank() || periodo.equalsIgnoreCase("tudo")) return base;
 
@@ -63,46 +64,50 @@ public class SessionService {
     }
 
     @Transactional(readOnly = true)
-    public Session buscar(String id) {
-        return repository.findById(id)
+    public Session buscar(String owner, String id) {
+        return repository.findByIdAndOwner(id, owner)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Sessão não encontrada: " + id));
     }
 
     @Transactional
-    public Session criar(SessionRequest req) {
-        String id = (req.id() == null || req.id().isBlank()) ? UUID.randomUUID().toString() : req.id().trim();
+    public Session criar(String owner, SessionRequest req) {
+        String id = owner != null || req.id() == null || req.id().isBlank()
+                ? UUID.randomUUID().toString() : req.id().trim();
         if (repository.existsById(id)) {
             throw new ConflitoException("Já existe uma sessão com o id " + id);
         }
         Session s = new Session();
         s.setId(id);
+        s.setOwner(owner);
         aplicar(s, req);
-        Session persisted = repository.save(s);
+        Session persisted;
+        try {
+            persisted = repository.saveAndFlush(s);
+        } catch (DataIntegrityViolationException exception) {
+            throw new ConflitoException("Já existe uma sessão com o id " + id);
+        }
         events.registered(persisted);
         return persisted;
     }
 
     @Transactional
-    public Session atualizar(String id, SessionRequest req) {
+    public Session atualizar(String owner, String id, SessionRequest req) {
         if (req.id() != null && !req.id().isBlank() && !req.id().equals(id)) {
             throw new RegraNegocioException("O id do corpo difere do id da URL.");
         }
-        Session s = buscar(id);
+        Session s = buscar(owner, id);
         aplicar(s, req);
         return repository.save(s);
     }
 
     @Transactional
-    public void excluir(String id) {
-        if (!repository.existsById(id)) {
-            throw new RecursoNaoEncontradoException("Sessão não encontrada: " + id);
-        }
-        repository.deleteById(id);
+    public void excluir(String owner, String id) {
+        repository.delete(buscar(owner, id));
     }
 
     @Transactional(readOnly = true)
-    public EstatisticasDTO estatisticas() {
-        List<Session> todas = repository.findAllByOrderByDateDescCreatedAtDesc();
+    public EstatisticasDTO estatisticas(String owner) {
+        List<Session> todas = repository.findAllByOwnerOrderByDateDescCreatedAtDesc(owner);
         LocalDate hoje = LocalDate.now(clock);
         LocalDate segunda = hoje.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 

@@ -48,7 +48,7 @@ public class SessionEventConsumer {
             return;
         }
         try {
-            activities.record(event.workoutId(), event.occurredAt());
+            activities.record(event.workoutId(), event.owner(), event.occurredAt());
         } catch (RuntimeException error) {
             log.warn("Projecao pendente id={} tipo={}", event.eventId(), error.getClass().getSimpleName());
             context.abandon();
@@ -63,5 +63,5 @@ public class SessionEventConsumer {
         context.deadLetter(new DeadLetterOptions().setDeadLetterReason("Evento invalido"));
     }
 
-    record SessionEvent(String eventId, String sessionId, String workoutId, Instant occurredAt) {}
+    record SessionEvent(String eventId, String sessionId, String workoutId, String owner, Instant occurredAt) {}
 }

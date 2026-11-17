@@ -28,31 +28,33 @@ public class WorkoutService {
         this.repository = repository;
     }
 
-    public List<Workout> listar(String dia, String busca) {
+    public List<Workout> listar(String owner, String dia, String busca) {
         if (dia != null && !dia.isBlank() && !Dominio.DIAS.contains(dia)) {
             throw new RegraNegocioException("Dia inválido. Use: " + String.join(", ", Dominio.DIAS));
         }
         String termo = busca == null ? "" : busca.trim().toLowerCase(Locale.ROOT);
-        return repository.findAll().stream()
+        return repository.findAllByOwner(owner).stream()
                 .filter(w -> dia == null || dia.isBlank() || w.getDays().contains(dia))
                 .filter(w -> termo.isEmpty() || w.getName().toLowerCase(Locale.ROOT).contains(termo))
                 .sorted(Comparator.comparing(Workout::getCreatedAt, Comparator.nullsLast(Comparator.<java.time.LocalDateTime>reverseOrder())))
                 .toList();
     }
 
-    public Workout buscar(String id) {
-        return repository.findById(id)
+    public Workout buscar(String owner, String id) {
+        return repository.findByIdAndOwner(id, owner)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Ficha não encontrada: " + id));
     }
 
     /** Cria a ficha. O frontend pode enviar o próprio id (UUID); se não enviar, o serviço gera. */
-    public Workout criar(WorkoutRequest req) {
-        String id = (req.id() == null || req.id().isBlank()) ? UUID.randomUUID().toString() : req.id().trim();
+    public Workout criar(String owner, WorkoutRequest req) {
+        String id = owner != null || req.id() == null || req.id().isBlank()
+                ? UUID.randomUUID().toString() : req.id().trim();
         if (repository.existsById(id)) {
             throw new ConflitoException("Já existe uma ficha com o id " + id);
         }
         Workout w = new Workout();
         w.setId(id);
+        w.setOwner(owner);
         aplicar(w, req);
         try {
             return repository.insert(w);
@@ -61,11 +63,11 @@ public class WorkoutService {
         }
     }
 
-    public Workout atualizar(String id, WorkoutRequest req) {
+    public Workout atualizar(String owner, String id, WorkoutRequest req) {
         if (req.id() != null && !req.id().isBlank() && !req.id().equals(id)) {
             throw new RegraNegocioException("O id do corpo difere do id da URL.");
         }
-        Workout w = buscar(id);
+        Workout w = buscar(owner, id);
         aplicar(w, req);
         try {
             return repository.save(w);
@@ -75,17 +77,12 @@ public class WorkoutService {
         }
     }
 
-    public void excluir(String id) {
-        if (!repository.existsById(id)) {
-            throw new RecursoNaoEncontradoException("Ficha não encontrada: " + id);
-        }
-        // As sessões já registradas ficam no progresso-service (database per service):
-        // apagar a ficha NÃO apaga o histórico.
-        repository.deleteById(id);
+    public void excluir(String owner, String id) {
+        repository.delete(buscar(owner, id));
     }
 
-    public EstatisticasDTO estatisticas() {
-        List<Workout> fichas = repository.findAll();
+    public EstatisticasDTO estatisticas(String owner) {
+        List<Workout> fichas = repository.findAllByOwner(owner);
 
         Map<String, Long> porDia = new LinkedHashMap<>();
         Dominio.DIAS.forEach(d -> porDia.put(d, fichas.stream().filter(w -> w.getDays().contains(d)).count()));

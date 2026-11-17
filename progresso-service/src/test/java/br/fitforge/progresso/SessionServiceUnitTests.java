@@ -24,20 +24,20 @@ class SessionServiceUnitTests {
 
     @Test
     void registraEventoDaSessaoPersistida() {
-        when(repository.save(any(Session.class))).thenAnswer(call -> call.getArgument(0));
+        when(repository.saveAndFlush(any(Session.class))).thenAnswer(call -> call.getArgument(0));
 
-        Session result = service.criar(request(LocalDate.now(clock)));
+        Session result = service.criar(null, request(LocalDate.now(clock)));
 
         var order = inOrder(repository, events);
-        order.verify(repository).save(result);
+        order.verify(repository).saveAndFlush(result);
         order.verify(events).registered(result);
     }
 
     @Test
     void rejeitaDataFuturaAntesDeGravarOuEmitir() {
-        assertThatThrownBy(() -> service.criar(request(LocalDate.now(clock).plusDays(1))))
+        assertThatThrownBy(() -> service.criar(null, request(LocalDate.now(clock).plusDays(1))))
                 .isInstanceOf(RegraNegocioException.class);
-        verify(repository, never()).save(any());
+        verify(repository, never()).saveAndFlush(any());
         verifyNoInteractions(events);
     }
 

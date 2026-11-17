@@ -12,15 +12,18 @@ public class SessionRegistered {
     private String eventId;
     private String sessionId;
     private String workoutId;
+    @jakarta.persistence.Column(name = "owner_username", length = 64)
+    private String owner;
     private Instant occurredAt;
     private Instant nextAttemptAt;
 
     protected SessionRegistered() {}
 
-    public SessionRegistered(String eventId, String sessionId, String workoutId, Instant occurredAt) {
+    public SessionRegistered(String eventId, String sessionId, String workoutId, String owner, Instant occurredAt) {
         this.eventId = eventId;
         this.sessionId = sessionId;
         this.workoutId = workoutId;
+        this.owner = owner;
         this.occurredAt = occurredAt;
         this.nextAttemptAt = occurredAt;
     }
@@ -28,5 +31,6 @@ public class SessionRegistered {
     public String getEventId() { return eventId; }
     public String getSessionId() { return sessionId; }
     public String getWorkoutId() { return workoutId; }
+    public String getOwner() { return owner; }
     public Instant getOccurredAt() { return occurredAt; }
 }

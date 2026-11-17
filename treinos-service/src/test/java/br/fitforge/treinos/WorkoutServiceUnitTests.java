@@ -26,7 +26,7 @@ class WorkoutServiceUnitTests {
     void normalizaDiasEConservaCargaDecimal() {
         when(repository.insert(any(Workout.class))).thenAnswer(call -> call.getArgument(0));
 
-        Workout workout = service.criar(entry);
+        Workout workout = service.criar(null, entry);
 
         assertThat(workout.getName()).isEqualTo("Treino A");
         assertThat(workout.getDays()).containsExactly("Seg", "Sex");
@@ -37,6 +37,6 @@ class WorkoutServiceUnitTests {
     void traduzColisaoDeIdConcorrenteEmConflito() {
         when(repository.insert(any(Workout.class))).thenThrow(new DuplicateKeyException("duplicate"));
 
-        assertThatThrownBy(() -> service.criar(entry)).isInstanceOf(ConflitoException.class);
+        assertThatThrownBy(() -> service.criar(null, entry)).isInstanceOf(ConflitoException.class);
     }
 }
