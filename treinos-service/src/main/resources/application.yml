@@ -1,0 +1,38 @@
+server:
+  port: ${PORT:8081}
+
+spring:
+  application:
+    name: treinos-service
+  data:
+    mongodb:
+      uri: "${MONGODB_URI:mongodb://localhost:27017}"
+      database: "${MONGODB_DATABASE:fitforge-treinos}"
+  jackson:
+    default-property-inclusion: always
+
+app:
+  seed: ${SEED_DATA:true}
+  service-bus:
+    enabled: ${SERVICE_BUS_ENABLED:false}
+    connection-string: "${SERVICE_BUS_CONNECTION_STRING:}"
+    queue: "${SERVICE_BUS_QUEUE:fitforge-sessoes}"
+  internal-key: "${FITFORGE_INTERNAL_KEY:}"
+  cors:
+    origins: ${CORS_ORIGINS:http://localhost:*,http://127.0.0.1:*,https://*.azurestaticapps.net,https://*.azurewebsites.net,https://*.web.core.windows.net}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never

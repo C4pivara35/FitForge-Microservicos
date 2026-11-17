@@ -1,0 +1,47 @@
+server:
+  port: ${PORT:8082}
+
+spring:
+  application:
+    name: progresso-service
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:progressodb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    username: ${DB_USER:sa}
+    password: "${DB_PASSWORD:}"
+  jpa:
+    hibernate:
+      ddl-auto: ${DB_DDL_AUTO:update}
+    open-in-view: false
+  h2:
+    console:
+      enabled: ${H2_CONSOLE:false}
+      path: /h2-console
+  jackson:
+    default-property-inclusion: always
+
+app:
+  seed: ${SEED_DATA:true}
+  service-bus:
+    enabled: ${SERVICE_BUS_ENABLED:false}
+    connection-string: "${SERVICE_BUS_CONNECTION_STRING:}"
+    queue: "${SERVICE_BUS_QUEUE:fitforge-sessoes}"
+  internal-key: "${FITFORGE_INTERNAL_KEY:}"
+  timezone: ${APP_TIMEZONE:America/Sao_Paulo}
+  cors:
+    origins: ${CORS_ORIGINS:http://localhost:*,http://127.0.0.1:*,https://*.azurestaticapps.net,https://*.azurewebsites.net,https://*.web.core.windows.net}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never
