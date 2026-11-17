@@ -1,5 +1,6 @@
 package br.fitforge.treinos.workouts.activity;
 
+import com.azure.core.amqp.AmqpTransportType;
 import com.azure.messaging.servicebus.ServiceBusClientBuilder;
 import com.azure.messaging.servicebus.ServiceBusReceivedMessageContext;
 import com.azure.messaging.servicebus.ServiceBusProcessorClient;
@@ -25,6 +26,7 @@ public class SessionEventConsumer {
                                                @Value("${app.service-bus.queue}") String queue,
                                                ObjectMapper json, WorkoutActivities activities) {
         return new ServiceBusClientBuilder().connectionString(connection)
+                .transportType(AmqpTransportType.AMQP_WEB_SOCKETS)
                 .processor()
                 .queueName(queue)
                 .disableAutoComplete()

@@ -7,5 +7,5 @@
 
 ## Trabalho
 
-FitForge — Microsserviços (treinos-service e progresso-service) com Java 21 e Spring Boot.
-Atividade Formativa 14 — Arquitetura de Soluções Computacionais.
+FitForge — Projeto Arquitetura Completa — Cloud.
+Microfrontend, Gateway/BFF, microsserviços, bancos independentes e Azure Service Bus.

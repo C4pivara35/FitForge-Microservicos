@@ -1,0 +1,32 @@
+# Ative somente na Azure com SPRING_PROFILES_ACTIVE=azure.
+# Sem DB_URL, o aplicativo falha na inicializacao em vez de usar H2.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: "${DB_PASSWORD}"
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 0
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: ${DB_DDL_AUTO:update}
+  h2:
+    console:
+      enabled: false
+
+app:
+  seed: ${SEED_DATA:false}
+  internal-key: "${FITFORGE_INTERNAL_KEY}"
+  service-bus:
+    enabled: ${SERVICE_BUS_ENABLED:true}
+    connection-string: "${SERVICE_BUS_CONNECTION_STRING}"
+    queue: "${SERVICE_BUS_QUEUE:fitforge-sessoes}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

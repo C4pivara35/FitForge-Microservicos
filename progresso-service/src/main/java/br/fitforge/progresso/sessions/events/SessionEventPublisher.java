@@ -1,5 +1,6 @@
 package br.fitforge.progresso.sessions.events;
 
+import com.azure.core.amqp.AmqpTransportType;
 import com.azure.messaging.servicebus.ServiceBusClientBuilder;
 import com.azure.messaging.servicebus.ServiceBusMessage;
 import com.azure.messaging.servicebus.ServiceBusSenderClient;
@@ -25,7 +26,9 @@ public class SessionEventPublisher {
     @Bean(destroyMethod = "close")
     ServiceBusSenderClient sessionSender(@Value("${app.service-bus.connection-string}") String connection,
                                          @Value("${app.service-bus.queue}") String queue) {
-        return new ServiceBusClientBuilder().connectionString(connection).sender().queueName(queue).buildClient();
+        return new ServiceBusClientBuilder().connectionString(connection)
+                .transportType(AmqpTransportType.AMQP_WEB_SOCKETS)
+                .sender().queueName(queue).buildClient();
     }
 
     @Bean

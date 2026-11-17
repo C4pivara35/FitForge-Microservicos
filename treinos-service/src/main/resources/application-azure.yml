@@ -1,0 +1,20 @@
+# Mantenha as credenciais apenas nas Environment variables do App Service.
+spring:
+  data:
+    mongodb:
+      uri: "${MONGODB_URI}"
+      database: "${MONGODB_DATABASE:fitforge-treinos}"
+
+app:
+  seed: ${SEED_DATA:false}
+  internal-key: "${FITFORGE_INTERNAL_KEY}"
+  service-bus:
+    enabled: ${SERVICE_BUS_ENABLED:true}
+    connection-string: "${SERVICE_BUS_CONNECTION_STRING}"
+    queue: "${SERVICE_BUS_QUEUE:fitforge-sessoes}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
