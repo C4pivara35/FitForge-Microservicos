@@ -20,6 +20,7 @@ import java.util.List;
 @RequestMapping("/api/sessoes")
 @Tag(name = "Sessões de treino", description = "CRUD do histórico de treinos e indicadores de progresso")
 public class SessionController {
+    private static final String OWNER = "X-FitForge-Owner";
 
     private final SessionService service;
 
@@ -29,41 +30,43 @@ public class SessionController {
 
     @GetMapping
     @Operation(summary = "Listar sessões", description = "Mais recentes primeiro. Filtros: ?workoutId=...&periodo=semana|mes|tudo")
-    public List<Session> listar(@RequestParam(required = false) String workoutId,
+    public List<Session> listar(
+                                @RequestHeader(name = OWNER, required = false) String owner,
+                                @RequestParam(required = false) String workoutId,
                                 @Parameter(description = "semana, mes ou tudo") @RequestParam(required = false) String periodo) {
-        return service.listar(workoutId, periodo);
+        return service.listar(owner, workoutId, periodo);
     }
 
     @GetMapping("/estatisticas")
     @Operation(summary = "Indicadores de progresso", description = "Totais, semana atual (seg–dom), esforço médio, último peso e sequência")
-    public EstatisticasDTO estatisticas() {
-        return service.estatisticas();
+    public EstatisticasDTO estatisticas(@RequestHeader(name = OWNER, required = false) String owner) {
+        return service.estatisticas(owner);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar sessão por id")
-    public Session buscar(@PathVariable String id) {
-        return service.buscar(id);
+    public Session buscar(@RequestHeader(name = OWNER, required = false) String owner, @PathVariable String id) {
+        return service.buscar(owner, id);
     }
 
     @PostMapping
     @Operation(summary = "Registrar sessão")
-    public ResponseEntity<Session> criar(@Valid @RequestBody SessionRequest req) {
-        Session criada = service.criar(req);
+    public ResponseEntity<Session> criar(@RequestHeader(name = OWNER, required = false) String owner, @Valid @RequestBody SessionRequest req) {
+        Session criada = service.criar(owner, req);
         var uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(criada.getId()).toUri();
         return ResponseEntity.created(uri).body(criada);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar sessão")
-    public Session atualizar(@PathVariable String id, @Valid @RequestBody SessionRequest req) {
-        return service.atualizar(id, req);
+    public Session atualizar(@RequestHeader(name = OWNER, required = false) String owner, @PathVariable String id, @Valid @RequestBody SessionRequest req) {
+        return service.atualizar(owner, id, req);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Excluir sessão")
-    public void excluir(@PathVariable String id) {
-        service.excluir(id);
+    public void excluir(@RequestHeader(name = OWNER, required = false) String owner, @PathVariable String id) {
+        service.excluir(owner, id);
     }
 }

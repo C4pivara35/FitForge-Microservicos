@@ -16,6 +16,7 @@ public class Workout {
 
     @MongoId(FieldType.STRING)
     private String id;
+    private String owner;
 
     @Version
     @JsonIgnore
@@ -43,6 +44,9 @@ public class Workout {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    @JsonIgnore
+    public String getOwner() { return owner; }
+    public void setOwner(String owner) { this.owner = owner; }
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getName() { return name; }

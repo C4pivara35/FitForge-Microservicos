@@ -59,10 +59,17 @@ class WorkoutApiTests {
     }
 
     @Test
+    void rejeitaProprietarioInformadoSemChaveInterna() throws Exception {
+        mvc.perform(get("/api/treinos").servletPath("/api/treinos")
+                        .header("X-FitForge-Owner", "conta-externa"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void atividadeMantemRegistroMaisRecenteMesmoComReentrega() throws Exception {
-        activities.record("template-a", Instant.parse("2026-01-12T10:00:00Z"));
-        activities.record("template-a", Instant.parse("2026-01-11T10:00:00Z"));
-        activities.record("template-a", Instant.parse("2026-01-12T10:00:00Z"));
+        activities.record("template-a", null, Instant.parse("2026-01-12T10:00:00Z"));
+        activities.record("template-a", null, Instant.parse("2026-01-11T10:00:00Z"));
+        activities.record("template-a", null, Instant.parse("2026-01-12T10:00:00Z"));
         mvc.perform(get("/api/treinos/template-a/atividade"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.workoutId").value("template-a"))

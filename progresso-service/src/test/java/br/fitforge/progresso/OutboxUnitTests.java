@@ -28,7 +28,7 @@ class OutboxUnitTests {
     @Test
     void confirmaEventoComIdentificadorEstavelDepoisDoEnvio() throws Exception {
         when(outbox.findTop20ByNextAttemptAtLessThanEqualOrderByNextAttemptAtAsc(now))
-                .thenReturn(List.of(new SessionRegistered("evento-1", "sessao-1", "treino-1", now)));
+                .thenReturn(List.of(new SessionRegistered("evento-1", "sessao-1", "treino-1", null, now)));
 
         dispatch.dispatch();
 
@@ -45,7 +45,7 @@ class OutboxUnitTests {
     @Test
     void reagendaQuandoBrokerFalha() {
         when(outbox.findTop20ByNextAttemptAtLessThanEqualOrderByNextAttemptAtAsc(now))
-                .thenReturn(List.of(new SessionRegistered("evento-1", "sessao-1", "treino-1", now)));
+                .thenReturn(List.of(new SessionRegistered("evento-1", "sessao-1", "treino-1", null, now)));
         doThrow(new IllegalStateException("broker indisponível")).when(sender).accept(any());
 
         dispatch.dispatch();

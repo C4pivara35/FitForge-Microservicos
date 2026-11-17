@@ -23,7 +23,7 @@ public class SessionEvents {
     public void registered(Session session) {
         if (enabled) {
             outbox.save(new SessionRegistered(UUID.randomUUID().toString(),
-                    session.getId(), session.getWorkoutId(), clock.instant()));
+                    session.getId(), session.getWorkoutId(), session.getOwner(), clock.instant()));
         }
     }
 }
